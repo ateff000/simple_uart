@@ -21,7 +21,7 @@ parameter PARITY = 0;
 //	2 - odd;
 //	3 - mark;
 //	4 - space;
-parameter STOP = 0;
+parameter STOP = 1;
 //	0 - 1
 //	1 - 2
 localparam IDLE = 0, SET_START = 1, TX_DATA = 2, SET_PARITY = 3, SET_STOP = 4;
