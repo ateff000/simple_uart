@@ -12,8 +12,11 @@ elif platform == "win32":
 	gtkwave = r'd:\Other\iverilog\gtkwave\bin\gtkwave.exe'
 
 
-testbench = 'TB_UART_TX.v'
-tested = 'UART_TX.v'
+# testbench = 'TB_UART_TX.v'
+# tested = 'UART_TX.v'
+
+testbench = 'TB_UART_RX.v'
+tested = 'UART_RX.v'
 
 output = 'qqq'
 

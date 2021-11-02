@@ -75,13 +75,13 @@ always@(*)
 			next_state = SET_STOP;
 			
 		SET_STOP:
-			if (STOP)
-				if (cnt_end)
-					next_state = IDLE;
+			if (cnt_end)
+				if (start)
+					next_state = SET_START;
 				else
-					next_state = SET_STOP;
+					next_state = IDLE;
 			else
-				next_state = IDLE;
+				next_state = SET_STOP;
 	endcase
 
 always@(negedge clk or negedge nrst)
@@ -164,6 +164,8 @@ always@(negedge clk or negedge nrst)
 	if (!nrst)
 		ready <= 0;
 	else
-		ready <= (next_state == IDLE) & cnt_end;
-
+		case (STOP)
+			0: ready <= (next_state == SET_STOP);
+			1: ready <= (state == SET_STOP) & ~cnt_end;
+		endcase
 endmodule

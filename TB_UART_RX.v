@@ -1,14 +1,22 @@
 `timescale 1ns/100ps
-module TB_UART_TX;
+`include "UART_TX.v"
 
+module TB_UART_RX;
 
-reg clk, nrst;
+localparam N = 8;
+localparam STOP = 0;
 
-//	Uart transmitter signals;
-reg		start;
-reg		[7:0] data;
-wire	q;
-wire	ready;
+reg	clk50m, tx_clk, nrst;
+
+//	UART receiver signals;
+wire	rx;
+wire	r_ready;
+wire	[N-1:0] r_data;
+
+//	UART transmitter signals;
+reg		t_start;
+reg		[N-1:0] t_data;
+wire	tx, t_ready;
 
 //	Test data array;
 reg [7:0] data_array [0:15];
@@ -19,24 +27,42 @@ reg			tmr0_en;
 //
 reg [7:0] i;
 
+///	ASSIGMENTS
+// assign rx = tx;
+assign rx = 0;
 
+
+UART_RX #(
+	.STOP(STOP)
+	)
+	UART_RX_INST (
+	// Inputs;
+	.clk(clk50m),
+	.nrst(nrst),
+	.in(rx),
+	// Outputs;
+	.q(r_data),
+	.ready(r_ready)
+	);
+	
 
 UART_TX #(
-	.STOP(1)
+	.STOP(STOP)
 	)
 	UART_TX_INST (
 	//	Inputs
-	.clk(clk),
+	.clk(tx_clk),
 	.nrst(nrst),
-	.start(start),
-	.data(data),
+	.start(t_start),
+	.data(t_data),
 	//	Outputs;
-	.q(q),
-	.ready(ready)
+	.q(tx),
+	.ready(t_ready)
 	);
 
+
 //	TMR0
-always@(negedge clk)
+always@(negedge tx_clk)
 	if (tmr0_en)
 		if (tmr0 < 7)
 			begin
@@ -54,51 +80,47 @@ always@(negedge clk)
 		tmr0_end <= 0;
 		end
 
-
-always@(posedge clk)
+always@(posedge tx_clk)
 	if (tmr0_end)
 		tmr0_en <= 0;
 	else
 		tmr0_en <= tmr0_en;
-
-
-///
-always@(posedge clk)
-	if (ready | tmr0_end)
+		
+//	TX data;
+always@(posedge tx_clk)
+	if (t_ready | tmr0_end)
 		begin
-		data <= data_array[i];
-		start <= 1;
+		t_data <= data_array[i];
+		t_start <= 1;
 		i <= i + 1;
 		end
 	else
 		begin
-		data <= data;
-		start <= 0;
+		t_data <= t_data;
+		t_start <= 0;
 		i <= i;
-		end
-		
+		end		
 
+
+	
 ///	INIT
 //	Main;
 initial
 	begin
-	i = 0;
-	clk = 0;
+	clk50m = 0;
 	nrst = 0;
-	start = 0;
-	data = 0;
+	tx_clk = 0;
+	i = 0;
+	t_data = 0;
+	t_start = 0;
 	tmr0 = 0;
-	tmr0_end = 0;
 	tmr0_en = 1;
+	tmr0_end = 0;
 	#100
 	nrst = 1;
-	// #21600
-	// start = 1;
-	// data = 8'h5a;
-	// #8680
-	// start = 0;
 	end
-
+	
+	
 //	Test data array;
 initial
 	begin
@@ -118,12 +140,16 @@ initial
 	data_array[13]	= 8'hab;
 	data_array[14]	= 8'h51;
 	data_array[15]	= 8'h2d;
-	end
+	end	
 
 //	Clocks
 always
-	#4340 clk = ~clk;
-
+	#10 clk50m = ~clk50m;
+	
+//	Clocks
+always
+	#43400 tx_clk = ~tx_clk;
+	
 initial
 	#2000000 $finish;
 
@@ -131,9 +157,9 @@ initial
 /// GENERATE VCD-FILE
 initial
 	begin
-	$dumpfile("out_tx.vcd");
-	$dumpvars(0, TB_UART_TX);
-	$dumpvars(0, UART_TX_INST);
+	$dumpfile("out.vcd");
+	$dumpvars(0, TB_UART_RX);
+	$dumpvars(0, UART_RX_INST);
 	end
 
 
