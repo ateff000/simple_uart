@@ -13,7 +13,7 @@ wire	ready;
 //	Test data array;
 reg [7:0] data_array [0:15];
 //	Tests timers;
-reg [2:0]	tmr0;
+reg [7:0]	tmr0;
 reg 		tmr0_end;
 reg			tmr0_en;
 //
@@ -51,7 +51,7 @@ always@(negedge clk)
 	else
 		begin
 		tmr0 <= 0;
-		tmr0_end <= 0;
+		tmr0_end <= tmr0_end;
 		end
 
 
@@ -64,12 +64,19 @@ always@(posedge clk)
 
 ///
 always@(posedge clk)
-	if (ready | tmr0_end)
-		begin
-		data <= data_array[i];
-		start <= 1;
-		i <= i + 1;
-		end
+	if (ready & tmr0_end)
+		if (i < 16)
+			begin
+			data <= data_array[i];
+			start <= 1;
+			i <= i + 1;
+			end
+		else
+			begin
+			data <= 0;
+			start = 0;
+			i <= i;
+			end
 	else
 		begin
 		data <= data;

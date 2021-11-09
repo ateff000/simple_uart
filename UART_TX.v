@@ -21,7 +21,7 @@ parameter PARITY = 0;
 //	2 - odd;
 //	3 - mark;
 //	4 - space;
-parameter STOP = 1;
+parameter STOP = 0;
 //	0 - 1
 //	1 - 2
 localparam IDLE = 0, SET_START = 1, TX_DATA = 2, SET_PARITY = 3, SET_STOP = 4;
@@ -47,6 +47,7 @@ reg [M-1:0]	cnt;
 reg 		cnt_end;
 //	State machine;
 reg  [2:0]	state, next_state;
+reg			next_ready;
 
 
 ///	WORK
@@ -55,33 +56,63 @@ always@(*)
 	case (state)
 		IDLE:
 			if (start)
+				begin
 				next_state = SET_START;
+				next_ready = 0;
+				end
 			else
+				begin
 				next_state = IDLE;
+				next_ready = 1;
+				end
 
 		SET_START:
+			begin
 			next_state = TX_DATA;
+			next_ready = 0;
+			end
 			
 		TX_DATA:
 			if (cnt_end)
 				if (PARITY == 0)
+					begin
 					next_state = SET_STOP;
+					next_ready = (STOP) ? 0 : 1;
+					end
 				else
+					begin
 					next_state = SET_PARITY;
+					next_ready = 0;
+					end
 			else
+				begin
 				next_state = TX_DATA;
+				next_ready = 0;
+				end
 			
 		SET_PARITY:
+			begin
 			next_state = SET_STOP;
+			next_ready = (STOP) ? 0 : 1;
+			end
 			
 		SET_STOP:
 			if (cnt_end)
 				if (start)
+					begin
 					next_state = SET_START;
+					next_ready = 0;
+					end
 				else
+					begin
 					next_state = IDLE;
+					next_ready = 1;
+					end
 			else
+				begin
 				next_state = SET_STOP;
+				next_ready = 1;
+				end
 	endcase
 
 always@(negedge clk or negedge nrst)
@@ -164,8 +195,9 @@ always@(negedge clk or negedge nrst)
 	if (!nrst)
 		ready <= 0;
 	else
-		case (STOP)
-			0: ready <= (next_state == SET_STOP);
-			1: ready <= (state == SET_STOP) & ~cnt_end;
-		endcase
+		ready <= next_ready;
+		// case (STOP)
+			// 0: ready <= (next_state == SET_STOP);
+			// 1: ready <= (state == SET_STOP) & ~cnt_end;
+		// endcase
 endmodule

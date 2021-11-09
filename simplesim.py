@@ -18,6 +18,10 @@ elif platform == "win32":
 testbench = 'TB_UART_RX.v'
 tested = 'UART_RX.v'
 
+# testbench = 'TB_FREQ_DIV.v'
+# tested = 'FREQ_DIV.v'
+
+
 output = 'qqq'
 
 

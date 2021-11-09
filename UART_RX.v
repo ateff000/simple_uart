@@ -13,9 +13,10 @@ parameter F = 50_000_000;	// Main clocks frquency, Hz;
 parameter BR = 115_200;		// receiver bitrate;
 parameter L = F/BR;			// One bit clk length;
 parameter hL = L/2;			// One bit clk half-length;
+parameter LCW = $clog2(L-1);	// Length Counter Width;
 parameter N = 8;	// Word bit width;
 parameter M = 3;	// Bits counter width;
-parameter PARYTY = 0;
+parameter PARITY = 0;
 parameter STOP = 1;
 
 localparam IDLE = 0, GET_START = 1, RX_DATA = 2, GET_PARITY = 3, GET_STOP = 4;
@@ -36,8 +37,8 @@ reg	[M-1:0]	bcnt;
 reg 		bcnt_end;
 reg			bcnt_en;
 //	Bit length counter;
-reg [15:0]	lcnt;
-reg			lcnt_end;
+reg [LCW-1:0]	lcnt;
+reg				lcnt_end;
 
 //	State machine;
 reg [2:0] state, next_state;
@@ -63,8 +64,8 @@ always@(*)
 			
     RX_DATA:
 		if (bcnt_end & lcnt_end)
-			if (PARYTY)
-				next_state = PARYTY;
+			if (PARITY)
+				next_state = PARITY;
 			else
 				next_state = GET_STOP;
 		else

@@ -28,8 +28,8 @@ reg			tmr0_en;
 reg [7:0] i;
 
 ///	ASSIGMENTS
-// assign rx = tx;
-assign rx = 0;
+assign rx = tx;
+// assign rx = 0;
 
 
 UART_RX #(
@@ -148,7 +148,7 @@ always
 	
 //	Clocks
 always
-	#43400 tx_clk = ~tx_clk;
+	#4340 tx_clk = ~tx_clk;
 	
 initial
 	#2000000 $finish;
